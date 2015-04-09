@@ -82,6 +82,41 @@ public class Test01 {
         // bean12의 get메소드는 Bean11[5] 배열을 반환한다. 배열안에는 값을 할당하지 않았기 때문에 null을 반환한다.
         System.out.println("print12() ----------------------------------------------------");
         Bean12 bean12 =  () -> new Bean11[5];
+
+        // 인터페이스가 메소드 자체를 구현하도록 한다.
+        System.out.println("print13() ----------------------------------------------------");
+        Bean13 bean13 = () -> {
+            System.out.println("run");
+        };
+        bean13.run();
+        bean13.run2();
+        // 인터페이스가 가지고 있는 default메소드를 오버라이딩 한다.
+        System.out.println("print14() ----------------------------------------------------");
+        Bean14 bean14 = () -> {
+            System.out.println("run");
+        };
+        bean14.run2();
+
+        System.out.println(bean14.getClass().getName()); // Test01의 이름없는 람다 클래스?
+        if(bean14 instanceof Bean14){ // Bean14의 인스턴스로 나온다.
+            System.out.println("bean14 instanceof Bean14");
+        }
+        System.out.println("print16() ----------------------------------------------------");
+        Bean16 bean16 = new Bean16();
+        bean16.run2();
+        System.out.println("print17() ----------------------------------------------------");
+        Bean17.run();
+
+
+        // 생성자 레퍼런스
+        System.out.println("print18() ----------------------------------------------------");
+        Bean18<Bean19> bean18 = ()->{ return new Bean19(); };
+        Bean18<Bean19> bean18_2 = Bean19::new;
+
+        // Bean21은 2개의 파라미터를 받는다. (Integer, Integer)
+        // bean20이 가지고 있는 메소드는 Integer, Integer를 파라미터로 전달받아 Bean21을 반환한다.
+        System.out.println("print20() ----------------------------------------------------");
+        Bean20<Integer, Integer, Bean21> bean20 = Bean21::new;
     }
 
     public static Bean11[] get(Bean12 bean){
@@ -194,4 +229,82 @@ class Bean11{
 
 interface Bean12{
     public Bean11[] get();
+}
+
+// 기존 인터페이스에 새로 추가되는 메소드에 구현자체를 넣을 수 있다.
+// 기존 인터페이스에 새로운 메소드가 추가되면 해당 인터페이스를 구현하고 있는 클래스들은 모두
+// 에러가 발생하게 된다. 메소드를 구현하지 않았으니깐!!
+// 이런 문제를 해결하기 위하여 인터페이스에 구현된 메소드를 가질 수 있도록 한다.
+// 기본 메소드는 클래스에서 구현하지 않아도 사용가능하다.
+interface Bean13{
+    public void run();
+    public default void run2(){
+        System.out.println("run2!");
+    }
+}
+
+interface Bean14 extends Bean13{
+    @Override
+    public default void run2(){
+        System.out.println("Bean14.run2");
+    }
+}
+
+interface Bean15 extends Bean13{
+    @Override
+    public default void run2(){
+        System.out.println("Bean15.run2");
+    }
+}
+
+// 실질적으로 다중상속이 된다. 다이아몬드 문제가 발생함. 컴파일 오류류
+class Bean16 implements Bean14, Bean15 {
+    public void run() {
+        System.out.println("run!");
+    }
+
+    @Override
+    public void run2() {
+        Bean14.super.run2();
+    }
+}
+
+// 인터페이스 정적 메소드
+// 기본 구현과 함께 인터페이스에서도 정적 메소드 정의 가능
+// 편의 메소드를 위한 이름공간으로서의 인터페이스
+
+interface Bean17{
+    public static void run(){
+        System.out.println("run!!");
+    }
+}
+
+
+interface Bean18<T>{
+    public T get();
+}
+
+class Bean19{
+
+}
+
+interface Bean20<T,U,R>{
+    public R get(T t, U u);
+}
+
+class Bean21<T,U>{
+    T t;
+    U u;
+    public Bean21(T t, U u){
+        this.t = t;
+        this.u = u;
+    }
+
+    @Override
+    public String toString() {
+        return "Bean21{" +
+                "t=" + t +
+                ", u=" + u +
+                '}';
+    }
 }
